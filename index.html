@@ -648,7 +648,9 @@ function rFinance(m){
     });
 
     // Save all button
-    const saveAllBtn=el('button',{className:'btn btn-p btn-sm',textContent:'✓ Сохранить все изменения',style:'margin-top:16px;width:100%'});
+    const saveAllBtn=el('button',{textContent:'✓ Сохранить все изменения',style:'margin-top:16px;width:100%;padding:7px;border-radius:7px;background:#1a1a1a;border:1px solid #E8321E;color:#E8321E;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit'});
+    saveAllBtn.onmouseenter=()=>{saveAllBtn.style.background='#E8321E';saveAllBtn.style.color='#fff'};
+    saveAllBtn.onmouseleave=()=>{saveAllBtn.style.background='#1a1a1a';saveAllBtn.style.color='#E8321E'};
     saveAllBtn.onclick=async()=>{
       saveAllBtn.textContent='Сохраняем...';saveAllBtn.disabled=true;
       try{
@@ -662,7 +664,7 @@ function rFinance(m){
 
     // ── SALES LOG ──────────────────────────────────────
     const logSec=sec('Лог продаж');
-    logSec.style.marginTop='24px';
+    logSec.style.marginTop='28px';
     const logWrap=el('div');
     logSec.appendChild(logWrap);
     m.appendChild(logSec);
@@ -718,7 +720,7 @@ function rFinance(m){
 
     // ── COLLECTIONS LOG ────────────────────────────────
     const colSec=sec('Инкассации');
-    colSec.style.marginTop='24px';
+    colSec.style.marginTop='28px';
     const colWrap=el('div');
     colSec.appendChild(colWrap);
     m.appendChild(colSec);
@@ -768,17 +770,15 @@ function rFinance(m){
           const smH=el('div',{style:'display:grid;grid-template-columns:1fr 1fr 80px 80px 1fr;gap:0;background:#1a1a1a;padding:6px 10px;font-size:10px;color:#555;text-transform:uppercase;border-radius:7px 7px 0 0;border:1px solid #2a2a2a;border-bottom:none'});
           ['Место','Ивент','Ожидается','Получено','Статус'].forEach(h=>smH.appendChild(el('div',{textContent:h})));
           colWrap.appendChild(smH);
-          const smB=el('div',{style:'border:1px solid #2a2a2a;border-radius:0 0 7px 7px;overflow:hidden;margin-bottom:16px'});
+          const smB=el('div',{style:'border:1px solid #2a2a2a;border-radius:0 0 7px 7px;overflow:hidden'});
           summaryRows.forEach((row,idx)=>{
             const drow=el('div',{style:'display:grid;grid-template-columns:1fr 1fr 80px 80px 1fr;gap:0;padding:7px 10px;border-top:'+(idx?'1px solid #1a1a1a':'none')+';font-size:12px;align-items:center'});
             let statusHtml;
             if(row.diff<=0){
               statusHtml='<span style="color:#4ade80;font-size:11px">✅ Закрыто</span>';
             } else if(row.hadCollection){
-              // была инкассация, но сумма не сошлась
               statusHtml='<span style="color:#f87171;font-size:11px">⚠️ Долг: '+row.diff.toLocaleString('ru-RU')+' RSD</span>';
             } else {
-              // инкассации ещё не было
               statusHtml='<span style="color:#facc15;font-size:11px">📋 К инкассации: '+row.diff.toLocaleString('ru-RU')+' RSD</span>';
             }
             drow.innerHTML='<div style="color:#888">'+esc(row.bn)+'</div><div style="color:#ccc">'+esc(row.ev.calNm)+'</div>'
@@ -786,44 +786,47 @@ function rFinance(m){
               +'<div style="color:#ccc">'+row.collected.toLocaleString('ru-RU')+'</div>'+statusHtml;
             smB.appendChild(drow);
           });
-          // Totals row
-          const totalsRow=el('div',{style:'display:flex;gap:16px;justify-content:flex-end;padding:6px 0;margin-top:-10px;margin-bottom:16px;font-size:12px'});
+          colWrap.appendChild(smB);
           let sumPending=0,sumDebt=0;
           summaryRows.forEach(row=>{
             if(row.diff>0&&!row.hadCollection) sumPending+=row.diff;
             else if(row.diff>0&&row.hadCollection) sumDebt+=row.diff;
           });
-          if(sumPending>0) totalsRow.innerHTML+='<span style="color:#facc15">📋 К инкассации: <b>'+sumPending.toLocaleString('ru-RU')+' RSD</b></span>';
-          if(sumDebt>0) totalsRow.innerHTML+='<span style="color:#f87171">⚠️ Долг: <b>'+sumDebt.toLocaleString('ru-RU')+' RSD</b></span>';
-          colWrap.appendChild(smB);
-          if(sumPending>0||sumDebt>0) colWrap.appendChild(totalsRow);
+          if(sumPending>0||sumDebt>0){
+            const totalsRow=el('div',{style:'text-align:right;font-size:12px;padding:4px 0;margin-top:8px;margin-bottom:16px;display:flex;gap:16px;justify-content:flex-end'});
+            if(sumPending>0) totalsRow.innerHTML+='<span style="color:#facc15">📋 К инкассации: <b>'+sumPending.toLocaleString('ru-RU')+' RSD</b></span>';
+            if(sumDebt>0) totalsRow.innerHTML+='<span style="color:#f87171">⚠️ Долг: <b>'+sumDebt.toLocaleString('ru-RU')+' RSD</b></span>';
+            colWrap.appendChild(totalsRow);
+          }
         }
 
         // ── Add new collection form ──────────────────────────
         const addColSec=el('div',{style:'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:12px;margin-bottom:16px'});
         const addColTitle=el('div',{style:'font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px',textContent:'+ Добавить инкассацию'});
         addColSec.appendChild(addColTitle);
-        const addRow=el('div',{style:'display:grid;grid-template-columns:1fr 1fr 90px 90px 70px auto;gap:6px;align-items:center'});
+        const fldStyle='font-size:12px;padding:6px 8px';
+        const addRow1=el('div',{style:'display:grid;grid-template-columns:1fr 1fr 120px;gap:6px;margin-bottom:6px'});
+        const addRow2=el('div',{style:'display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center'});
         // Bar select
-        const barSel=el('select',{className:'fisml',style:'font-size:12px'});
+        const barSel=el('select',{className:'fisml',style:fldStyle});
         [['','— Бар —'],['fomin','Fomin Bar'],['skart','Skart'],['zappa','Zappa Bar'],['crnivan','Crni Ovan']].forEach(([v,l])=>{
           const o=el('option',{value:v,textContent:l});barSel.appendChild(o);
         });
         // Event select
-        const evSel=el('select',{className:'fisml',style:'font-size:12px'});
+        const evSel=el('select',{className:'fisml',style:fldStyle});
         const evOptDef=el('option',{value:'',textContent:'— Ивент —'});evSel.appendChild(evOptDef);
         upcoming.forEach(ev=>{const o=el('option',{value:ev.id,textContent:ev.calNm});evSel.appendChild(o);});
-        // Amount
-        const amtNew=el('input',{className:'fisml',type:'number',placeholder:'Сумма RSD',style:'font-size:12px'});
-        // Who
-        const whoNew=el('input',{className:'fisml',type:'text',placeholder:'Кто',style:'font-size:12px'});
         // Date
-        const dateNew=el('input',{className:'fisml',type:'date',value:new Date().toISOString().split('T')[0],style:'font-size:12px'});
+        const dateNew=el('input',{className:'fisml',type:'date',value:new Date().toISOString().split('T')[0],style:fldStyle});
+        // Amount
+        const amtNew=el('input',{className:'fisml',type:'number',placeholder:'Сумма RSD',style:fldStyle});
+        // Who
+        const whoNew=el('input',{className:'fisml',type:'text',placeholder:'Кто',style:fldStyle});
         // Save btn
-        const addBtn=el('button',{className:'btn',textContent:'+ Добавить',style:'font-size:12px;padding:4px 10px'});
+        const addBtn=el('button',{textContent:'+ Добавить',style:'background:#E8321E;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-family:inherit;white-space:nowrap'});
         addBtn.onclick=async()=>{
           const bk=barSel.value,evId=evSel.value,amt=parseInt(amtNew.value)||0,who=whoNew.value.trim(),dt=dateNew.value;
-          if(!bk||!evId||!amt){addBtn.style.color='#f87171';setTimeout(()=>addBtn.style.color='',1500);return;}
+          if(!bk||!evId||!amt){addBtn.style.opacity='.5';setTimeout(()=>addBtn.style.opacity='',1500);return;}
           addBtn.textContent='...';addBtn.disabled=true;
           try{
             await addDoc(collection(db,'collections'),{
@@ -832,12 +835,13 @@ function rFinance(m){
               date:dt,timestamp:new Date().toISOString(),source:'os'
             });
             amtNew.value='';whoNew.value='';
-            addBtn.textContent='✓';addBtn.style.color='#4ade80';
-            setTimeout(()=>{addBtn.textContent='+ Добавить';addBtn.style.color='';addBtn.disabled=false;loadCols();},1200);
+            addBtn.textContent='✓';
+            setTimeout(()=>{addBtn.textContent='+ Добавить';addBtn.disabled=false;loadCols();},1200);
           }catch(e){addBtn.textContent='!';addBtn.disabled=false;}
         };
-        addRow.appendChild(barSel);addRow.appendChild(evSel);addRow.appendChild(amtNew);addRow.appendChild(whoNew);addRow.appendChild(dateNew);addRow.appendChild(addBtn);
-        addColSec.appendChild(addRow);
+        addRow1.appendChild(barSel);addRow1.appendChild(evSel);addRow1.appendChild(dateNew);
+        addRow2.appendChild(amtNew);addRow2.appendChild(whoNew);addRow2.appendChild(addBtn);
+        addColSec.appendChild(addRow1);addColSec.appendChild(addRow2);
         colWrap.appendChild(addColSec);
 
         // ── History ──────────────────────────────────────────
