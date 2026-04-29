@@ -225,17 +225,39 @@ function rList(m){const si=el('input',{className:'srch',type:'text',placeholder:
 function rCards(cnt,gd){const q=ST.q.toLowerCase();const evs=ST.events.filter(e=>!q||[e.calNm,...(e.cities||[])].some(v=>v&&v.toLowerCase().includes(q))).sort((a,b)=>{const ad=(a.cities||[]).map(c=>a.cityData[c]?.date).filter(Boolean).sort()[0];const bd=(b.cities||[]).map(c=>b.cityData[c]?.date).filter(Boolean).sort()[0];if(!ad)return 1;if(!bd)return-1;return new Date(ad)-new Date(bd)});cnt.textContent=evs.length+' '+(evs.length===1?'ивент':evs.length<5&&evs.length>1?'ивента':'ивентов');gd.innerHTML='';if(!evs.length){gd.innerHTML='<div class="empty"><h3>Нет ивентов</h3><p>Добавьте первый ивент</p></div>';return}evs.forEach(ev=>{const c=el('div',{className:'card'});c.innerHTML=`<div class="card-top"><div class="dot" style="background:${ev.calCol}"></div><div class="card-nm">${esc(ev.calNm||'Без названия')}</div></div><div class="card-meta"><div style="margin-bottom:3px">${evD(ev)}</div><div>${(ev.cities||[]).map(ct=>`<span class="chip">${ct}</span>`).join('')}</div></div>`;c.onclick=()=>{ST.selId=ev.id;ST.tab=0;ST.view='detail';render()};gd.appendChild(c)})}
 function lF(lbl,url,short){const f=el('div');f.innerHTML=`<div class="fl">${lbl}</div>`;if(url){const v=el('div',{className:'fv lnk'});const a=el('a',{href:url,target:'_blank',textContent:url});const b=el('button',{className:'cpb',textContent:'copy'});b.onclick=e=>{e.stopPropagation();cp(url);b.textContent='✓';setTimeout(()=>b.textContent='copy',1200)};v.appendChild(a);v.appendChild(b);f.appendChild(v);if(short){const v2=el('div',{className:'fv lnk',style:'margin-top:-6px;margin-bottom:10px'});const a2=el('a',{href:short,target:'_blank',textContent:short});const b2=el('button',{className:'cpb',textContent:'copy'});b2.onclick=e=>{e.stopPropagation();cp(short);b2.textContent='✓';setTimeout(()=>b2.textContent='copy',1200)};v2.appendChild(a2);v2.appendChild(b2);f.appendChild(v2)}}else f.innerHTML+=`<div class="fv emp">—</div>`;return f}
 function sF(lbl,val){return el('div',{html:`<div class="fl">${lbl}</div><div class="fv${val?'':' emp'}">${val?esc(val):'—'}</div>`})}
-function rDetail(m){const ev=ST.events.find(e=>e.id===ST.selId);if(!ev){ST.view='list';render();return}const bk=el('button',{className:'back',textContent:'← Все ивенты'});bk.onclick=()=>{ST.view='list';render()};m.appendChild(bk);m.appendChild(el('div',{style:`height:3px;border-radius:2px;background:${ev.calCol};margin-bottom:12px`}));m.appendChild(el('div',{className:'ev-title',html:esc(ev.calNm||'Без названия')}));const ds=el('div',{className:'ev-meta'});(ev.cities||[]).forEach(c=>{const d=ev.cityData[c];ds.innerHTML+=`<span>${c}${d?.venue&&d.venue!=='—'?' · '+esc(d.venue):''}${d?.date?' · '+fmt(d.date):''}</span>`});m.appendChild(ds);const ar=el('div',{className:'actions'});const eb=el('button',{className:'btn btn-sm',textContent:'✏ Редактировать'});eb.onclick=()=>{ST.ed=JSON.parse(JSON.stringify(ev));ST.isnew=false;ST.tab=0;ST.view='form';render()};const db2=el('button',{className:'btn btn-d btn-sm',textContent:'Удалить'});db2.onclick=()=>{if(confirm('Удалить?')){ST.events=ST.events.filter(e=>e.id!==ev.id);ST.view='list';render();saveFB()}};ar.appendChild(eb);ar.appendChild(db2);m.appendChild(ar);const tabs=el('div',{className:'tabs'});TABS.forEach((t,i)=>{const tb=el('button',{className:'tab'+(ST.tab===i?' on':''),textContent:t});tb.onclick=()=>{ST.tab=i;rDT(tc,ev);tabs.querySelectorAll('.tab').forEach((x,j)=>x.className='tab'+(j===i?' on':''))};tabs.appendChild(tb)});m.appendChild(tabs);const tc=el('div');m.appendChild(tc);rDT(tc,ev)}
+function rDetail(m){const ev=ST.events.find(e=>e.id===ST.selId);if(!ev){ST.view='list';render();return}const bk=el('button',{className:'back',textContent:'← Все ивенты'});bk.onclick=()=>{ST.view='list';render()};m.appendChild(bk);m.appendChild(el('div',{style:`height:3px;border-radius:2px;background:${ev.calCol};margin-bottom:12px`}));m.appendChild(el('div',{className:'ev-title',html:esc(ev.calNm||'Без названия')}));const ds=el('div',{className:'ev-meta'});(ev.cities||[]).forEach(c=>{const d=ev.cityData[c];ds.innerHTML+=`<span>${c}${d?.venue&&d.venue!=='—'?' · '+esc(d.venue):''}${d?.date?' · '+fmt(d.date):''}</span>`});m.appendChild(ds);const ar=el('div',{className:'actions'});const eb=el('button',{className:'btn btn-sm',textContent:'✏ Редактировать'});eb.onclick=()=>{ST.ed=JSON.parse(JSON.stringify(ev));ST.isnew=false;ST.view='form';render()};const db2=el('button',{className:'btn btn-d btn-sm',textContent:'Удалить'});db2.onclick=()=>{if(confirm('Удалить?')){ST.events=ST.events.filter(e=>e.id!==ev.id);ST.view='list';render();saveFB()}};ar.appendChild(eb);ar.appendChild(db2);m.appendChild(ar);const tabs=el('div',{className:'tabs'});TABS.forEach((t,i)=>{const tb=el('button',{className:'tab'+(ST.tab===i?' on':''),textContent:t});tb.onclick=()=>{ST.tab=i;rDT(tc,ev);tabs.querySelectorAll('.tab').forEach((x,j)=>x.className='tab'+(j===i?' on':''))};tabs.appendChild(tb)});m.appendChild(tabs);const tc=el('div');m.appendChild(tc);rDT(tc,ev)}
 function rDT(c,ev){c.innerHTML='';const i=ST.tab;
-if(i===0){const s1=sec('Название');s1.appendChild(sF('Имя для календаря',ev.calNm));c.appendChild(s1);if((ev.cities||[]).length){const s2=sec('Города и даты');ev.cities.forEach(city=>{const d=ev.cityData[city];s2.innerHTML+=`<div class="fv"><b>${city}</b><div style="font-size:12px;color:#888;margin-top:3px">${d.venue&&d.venue!=='—'?esc(d.venue):'—'} · ${fmt(d.date)}</div></div>`});c.appendChild(s2)}const s3=sec('Материалы');s3.appendChild(lF('Google Drive ивента',ev.gdrive));s3.appendChild(lF('Пресс-релиз',ev.pressRelease));s3.appendChild(lF('Пресс-кит',ev.pressKit));c.appendChild(s3);if(ev.notes){const s4=sec('Заметки');s4.innerHTML+=`<div class="fv" style="white-space:pre-wrap;line-height:1.6">${esc(ev.notes)}</div>`;c.appendChild(s4)}}
-else if(i===1){const cities=ev.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const s=sec(city);TICKS[city].forEach(tn=>{const ti=ev.ticketData[city]?.[tn];if(ti?.active)s.appendChild(lF(tn,ti.url,ti.short));else s.innerHTML+=`<div style="font-size:12px;color:#3a3a3a;padding:1px 0">${tn}</div>`});c.appendChild(s)});if(cities.includes('Belgrade')){const sf=sec('Фан-билеты в барах');const act=BARS.filter(b=>ev.ticketData?.fanBars?.[b]);sf.innerHTML+=act.length?`<div class="fv">${esc(act.join(', '))}</div>`:`<div class="fv emp">—</div>`;c.appendChild(sf)}const sp=sec('Промо-ссылки');sp.appendChild(lF('Таплинк',ev.taplink));sp.appendChild(lF('FB Ивент',ev.fbev));c.appendChild(sp)}
+if(i===0){const s1=sec('Название');s1.appendChild(sF('Имя для календаря',ev.calNm));c.appendChild(s1);if((ev.cities||[]).length){const s2=sec('Города и даты');ev.cities.forEach(city=>{const d=ev.cityData[city];s2.innerHTML+=`<div class="fv"><b>${city}</b><div style="font-size:12px;color:#888;margin-top:3px">${d.venue&&d.venue!=='—'?esc(d.venue):'—'} · ${fmt(d.date)}</div></div>`});c.appendChild(s2)}const s3=sec('Материалы');s3.appendChild(lF('Google Drive ивента',ev.gdrive));s3.appendChild(lF('Пресс-релиз',ev.pressRelease));s3.appendChild(lF('Пресс-кит',ev.pressKit));s3.appendChild(lF('Taplink',ev.taplink));s3.appendChild(lF('FB Event',ev.fbev));c.appendChild(s3);if(ev.notes){const s4=sec('Заметки');s4.innerHTML+=`<div class="fv" style="white-space:pre-wrap;line-height:1.6">${esc(ev.notes)}</div>`;c.appendChild(s4)}}
+else if(i===1){const cities=ev.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const s=sec(city);TICKS[city].forEach(tn=>{const ti=ev.ticketData[city]?.[tn];if(ti?.active)s.appendChild(lF(tn,ti.url,ti.short));else s.innerHTML+=`<div style="font-size:12px;color:#3a3a3a;padding:1px 0">${tn}</div>`});c.appendChild(s)});if(cities.includes('Belgrade')){const sf=sec('Фан-билеты в барах');const act=BARS.filter(b=>ev.ticketData?.fanBars?.[b]);sf.innerHTML+=act.length?`<div class="fv">${esc(act.join(', '))}</div>`:`<div class="fv emp">—</div>`;c.appendChild(sf)}}
 else if(i===2){
   const hl=sec('Хедлайнер'+(ev.calNm?' — '+ev.calNm:''));
   [['Instagram','aIG'],['Facebook','aFB'],['Bandcamp','aBC'],['YouTube','aYT'],['Spotify','aSP']].forEach(([l,k])=>{if(ev[k])hl.appendChild(lF(l,ev[k]))});
-  [['vid1','Видео 1'],['vid2','Видео 2'],['vid3','Видео 3']].forEach(([k,lbl])=>{
+  ['vid1','vid2','vid3'].forEach((k,vi)=>{
     if(!ev[k])return;
-    const desc=(ev.vidDesc&&ev.vidDesc[k])?ev.vidDesc[k]:'';
-    hl.appendChild(lF(lbl+(desc?' — '+desc:''),ev[k]));
+    const vd=ev.vidDesc||{};
+    const vSec=el('div',{style:'margin-bottom:10px'});
+    vSec.innerHTML='<div class="fl">Video '+(vi+1)+'</div>';
+    const vBox=el('div',{style:'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:7px;padding:8px 10px'});
+    // Link
+    const lRow=el('div',{style:'display:flex;align-items:center;gap:6px;margin-bottom:4px'});
+    lRow.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Link</span>';
+    const lA=el('a',{href:ev[k],target:'_blank',textContent:ev[k],style:'color:#60a5fa;font-size:11px;font-family:monospace;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'});
+    const cpBtn=el('button',{className:'cpb',textContent:'copy'});
+    cpBtn.onclick=()=>{navigator.clipboard.writeText(ev[k]);cpBtn.textContent='✓';setTimeout(()=>cpBtn.textContent='copy',1200)};
+    lRow.appendChild(lA);lRow.appendChild(cpBtn);vBox.appendChild(lRow);
+    // Title
+    if(vd[k+'_title']){
+      const tRow=el('div',{style:'display:flex;align-items:center;gap:6px;margin-bottom:4px'});
+      tRow.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Title</span><span style="font-size:12px;color:#ccc">'+esc(vd[k+'_title'])+'</span>';
+      vBox.appendChild(tRow);
+    }
+    // Description
+    if(vd[k+'_desc']){
+      const dRow=el('div',{style:'display:flex;align-items:flex-start;gap:6px'});
+      dRow.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Desc</span><span style="font-size:12px;color:#888;line-height:1.5">'+esc(vd[k+'_desc'])+'</span>';
+      vBox.appendChild(dRow);
+    }
+    vSec.appendChild(vBox);hl.appendChild(vSec);
   });
   if(ev.aPK)hl.appendChild(lF('Press Kit',ev.aPK));
   if(ev.aTech)hl.appendChild(lF('Rider',ev.aTech));
@@ -250,10 +272,21 @@ else if(i===2){
     if(sp.site)ss.appendChild(lF('Сайт',sp.site));
     if(sp.pk)ss.appendChild(lF('Press Kit',sp.pk));
     if(sp.rider)ss.appendChild(lF('Rider',sp.rider));
-    [['vid1','Видео 1'],['vid2','Видео 2'],['vid3','Видео 3']].forEach(([k,lbl])=>{
+    ['vid1','vid2','vid3'].forEach((k,vi)=>{
       if(!sp[k])return;
-      const desc=(sp.vidDesc&&sp.vidDesc[k])?sp.vidDesc[k]:'';
-      ss.appendChild(lF(lbl+(desc?' — '+desc:''),sp[k]));
+      const svd=sp.vidDesc||{};
+      const vSec2=el('div',{style:'margin-bottom:10px'});
+      vSec2.innerHTML='<div class="fl">Video '+(vi+1)+'</div>';
+      const vBox2=el('div',{style:'background:#1a1a1a;border:1px solid #2a2a2a;border-radius:7px;padding:8px 10px'});
+      const lRow2=el('div',{style:'display:flex;align-items:center;gap:6px;margin-bottom:4px'});
+      lRow2.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Link</span>';
+      const lA2=el('a',{href:sp[k],target:'_blank',textContent:sp[k],style:'color:#60a5fa;font-size:11px;font-family:monospace;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'});
+      const cp2=el('button',{className:'cpb',textContent:'copy'});
+      cp2.onclick=()=>{navigator.clipboard.writeText(sp[k]);cp2.textContent='✓';setTimeout(()=>cp2.textContent='copy',1200)};
+      lRow2.appendChild(lA2);lRow2.appendChild(cp2);vBox2.appendChild(lRow2);
+      if(svd[k+'_title']){const tRow2=el('div',{style:'display:flex;align-items:center;gap:6px;margin-bottom:4px'});tRow2.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Title</span><span style="font-size:12px;color:#ccc">'+esc(svd[k+'_title'])+'</span>';vBox2.appendChild(tRow2)}
+      if(svd[k+'_desc']){const dRow2=el('div',{style:'display:flex;align-items:flex-start;gap:6px'});dRow2.innerHTML='<span style="font-size:11px;color:#555;width:64px;flex-shrink:0">Desc</span><span style="font-size:12px;color:#888;line-height:1.5">'+esc(svd[k+'_desc'])+'</span>';vBox2.appendChild(dRow2)}
+      vSec2.appendChild(vBox2);ss.appendChild(vSec2);
     });
     c.appendChild(ss);
   });
@@ -265,7 +298,7 @@ else if(i===2){
   extra.forEach(m=>{if(m.url)s2.appendChild(lF(m.label||'Файл',m.url))});
   if(!stdMats.some(([l,k])=>ev[k])&&!extra.length)s2.innerHTML+='<div class="fv emp">—</div>';
   c.appendChild(s2);
-  const s3=sec('Видео');['vid1','vid2','vid3'].forEach((k,j)=>s3.appendChild(lF('Видео '+(j+1),ev[k])));c.appendChild(s3);
+
 }
 else if(i===3){const cities=ev.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const cd=ev.cityData[city];const s=sec(city+(cd?.venue&&cd.venue!=='—'?' — '+cd.venue:''));const addr=cd?.venueAddress||VENUE_ADDR[cd?.venue]||'';if(addr)s.appendChild(lF('Адрес',addr));s.appendChild(lF('Instagram',cd?.venueIG));s.appendChild(lF('Facebook',cd?.venueFB));c.appendChild(s)})}
 else if(i===4){const proms=ev.promoters||[];if(!proms.some(p=>p.name)){c.innerHTML='<p class="hint">Промоутеры не добавлены</p>';return}proms.forEach((p,idx)=>{if(!p.name&&!p.ig)return;const s=sec(p.name||'Промоутер '+(idx+1));s.appendChild(lF('Instagram',p.ig));s.appendChild(lF('Facebook',p.fb));c.appendChild(s)})}
@@ -345,8 +378,8 @@ if(i===0){const s1=sec('Название');s1.appendChild(ff('Имя для ка
   custVWrap.appendChild(custVIn);
   function renderCustomVenue(){custVWrap.style.display=d.cityData[city].venue==='Drugo'?'block':'none'}
   renderCustomVenue();
-  sub.appendChild(df);sub.appendChild(vf);sub.appendChild(custVWrap);wrap.appendChild(sub);ck.onchange=()=>{if(ck.checked){if(!d.cities.includes(city))d.cities.push(city);sub.style.display='grid'}else{d.cities=d.cities.filter(x=>x!==city);sub.style.display='none'}};s3.appendChild(wrap)});c.appendChild(s3);const s4=sec('Материалы');s4.appendChild(ff('Google Drive ивента','gdrive','https://drive.google.com/...'));s4.appendChild(ff('Пресс-релиз','pressRelease','https://drive.google.com/...'));s4.appendChild(ff('Пресс-кит','pressKit','https://drive.google.com/...'));c.appendChild(s4);const s5=sec('Заметки');const ta=el('textarea',{className:'fta',placeholder:'Заметки...'});ta.value=d.notes||'';ta.oninput=e=>d.notes=e.target.value;s5.appendChild(ta);c.appendChild(s5)}
-else if(i===1){const cities=d.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const s=sec(city);if(!d.ticketData[city])d.ticketData[city]={};TICKS[city].forEach(tn=>{if(!d.ticketData[city][tn])d.ticketData[city][tn]={active:false,url:'',short:''};const ti=d.ticketData[city][tn];const wrap=el('div',{className:'box',style:'margin-bottom:8px'});const lbl=el('label',{style:'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer'});const ck=el('input',{type:'checkbox'});ck.className='ck';ck.checked=ti.active;lbl.appendChild(ck);lbl.appendChild(el('span',{textContent:tn}));wrap.appendChild(lbl);const sub=el('div',{style:'margin-top:'+(ti.active?'10':'0')+'px;display:'+(ti.active?'block':'none')});sub.appendChild(ff('Полная ссылка','url','https://...',undefined,ti));sub.appendChild(ff('Сокращённая','short','https://cutt.ly/...',undefined,ti));wrap.appendChild(sub);ck.onchange=()=>{ti.active=ck.checked;sub.style.display=ck.checked?'block':'none';sub.style.marginTop=ck.checked?'10px':'0'};s.appendChild(wrap)});c.appendChild(s)});if(cities.includes('Belgrade')){const sf=sec('Фан-билеты в барах');if(!d.ticketData.fanBars)d.ticketData.fanBars={};BARS.forEach(b=>{if(d.ticketData.fanBars[b]===undefined)d.ticketData.fanBars[b]=false;const lbl=el('label',{style:'display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;cursor:pointer'});const ck=el('input',{type:'checkbox'});ck.className='ck';ck.checked=d.ticketData.fanBars[b];ck.onchange=()=>d.ticketData.fanBars[b]=ck.checked;lbl.appendChild(ck);lbl.appendChild(el('span',{textContent:b}));sf.appendChild(lbl)});c.appendChild(sf)}const sp=sec('Промо-ссылки');sp.appendChild(ff('Таплинк','taplink','https://taplink.cc/...'));sp.appendChild(ff('FB Ивент','fbev','https://facebook.com/events/...'));c.appendChild(sp)}
+  sub.appendChild(df);sub.appendChild(vf);sub.appendChild(custVWrap);wrap.appendChild(sub);ck.onchange=()=>{if(ck.checked){if(!d.cities.includes(city))d.cities.push(city);sub.style.display='grid'}else{d.cities=d.cities.filter(x=>x!==city);sub.style.display='none'}};s3.appendChild(wrap)});c.appendChild(s3);const s4=sec('Материалы');s4.appendChild(ff('Google Drive ивента','gdrive','https://drive.google.com/...'));s4.appendChild(ff('Пресс-релиз','pressRelease','https://drive.google.com/...'));s4.appendChild(ff('Пресс-кит','pressKit','https://drive.google.com/...'));s4.appendChild(ff('Taplink','taplink','https://taplink.cc/...'));s4.appendChild(ff('FB Event','fbev','https://facebook.com/events/...'));c.appendChild(s4);const s5=sec('Заметки');const ta=el('textarea',{className:'fta',placeholder:'Заметки...'});ta.value=d.notes||'';ta.oninput=e=>d.notes=e.target.value;s5.appendChild(ta);c.appendChild(s5)}
+else if(i===1){const cities=d.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const s=sec(city);if(!d.ticketData[city])d.ticketData[city]={};TICKS[city].forEach(tn=>{if(!d.ticketData[city][tn])d.ticketData[city][tn]={active:false,url:'',short:''};const ti=d.ticketData[city][tn];const wrap=el('div',{className:'box',style:'margin-bottom:8px'});const lbl=el('label',{style:'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer'});const ck=el('input',{type:'checkbox'});ck.className='ck';ck.checked=ti.active;lbl.appendChild(ck);lbl.appendChild(el('span',{textContent:tn}));wrap.appendChild(lbl);const sub=el('div',{style:'margin-top:'+(ti.active?'10':'0')+'px;display:'+(ti.active?'block':'none')});sub.appendChild(ff('Полная ссылка','url','https://...',undefined,ti));sub.appendChild(ff('Сокращённая','short','https://cutt.ly/...',undefined,ti));wrap.appendChild(sub);ck.onchange=()=>{ti.active=ck.checked;sub.style.display=ck.checked?'block':'none';sub.style.marginTop=ck.checked?'10px':'0'};s.appendChild(wrap)});c.appendChild(s)});if(cities.includes('Belgrade')){const sf=sec('Фан-билеты в барах');if(!d.ticketData.fanBars)d.ticketData.fanBars={};BARS.forEach(b=>{if(d.ticketData.fanBars[b]===undefined)d.ticketData.fanBars[b]=false;const lbl=el('label',{style:'display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;cursor:pointer'});const ck=el('input',{type:'checkbox'});ck.className='ck';ck.checked=d.ticketData.fanBars[b];ck.onchange=()=>d.ticketData.fanBars[b]=ck.checked;lbl.appendChild(ck);lbl.appendChild(el('span',{textContent:b}));sf.appendChild(lbl)});c.appendChild(sf)}}
 else if(i===2){
   if(!d.supports)d.supports=[];
   if(!d.aExtra)d.aExtra=[];
@@ -358,19 +391,81 @@ else if(i===2){
   const hnIn=el('input',{className:'fi',placeholder:'Имя артиста',value:d.calNm||''});
   hnIn.oninput=e=>{d.calNm=e.target.value};hnWrap.appendChild(hnIn);hSec.appendChild(hnWrap);
   [['Instagram','aIG'],['Facebook','aFB'],['Bandcamp','aBC'],['YouTube','aYT'],['Spotify','aSP']].forEach(([l,k])=>hSec.appendChild(ff(l,k,'https://...')));
-  [['vid1','Видео 1'],['vid2','Видео 2'],['vid3','Видео 3']].forEach(([k,lbl])=>{
-    const vWrap=el('div',{style:'margin-bottom:10px'});
-    vWrap.innerHTML='<div class="fl">'+lbl+'</div>';
-    const vRow=el('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:6px'});
-    const vIn=el('input',{className:'fi',placeholder:'https://youtu.be/...',value:d[k]||'',style:'margin:0'});
-    vIn.oninput=e=>d[k]=e.target.value;
-    const vDesc=el('input',{className:'fi',placeholder:'Описание (напр. Live at Primavera)',value:(d.vidDesc&&d.vidDesc[k])||'',style:'margin:0'});
-    vDesc.oninput=e=>{if(!d.vidDesc)d.vidDesc={};d.vidDesc[k]=e.target.value};
-    vRow.appendChild(vIn);vRow.appendChild(vDesc);vWrap.appendChild(vRow);hSec.appendChild(vWrap);
+  ['vid1','vid2','vid3'].forEach((k,vi)=>{
+    if(!d.vidDesc)d.vidDesc={};
+    const vWrap=el('div',{style:'margin-bottom:12px;border:1px solid #2a2a2a;border-radius:8px;padding:10px'});
+    vWrap.innerHTML='<div class="fl" style="font-size:11px;font-weight:600;margin-bottom:8px">VIDEO '+(vi+1)+'</div>';
+    const linkW=el('div');linkW.innerHTML='<div class="fl">Link</div>';
+    const linkIn=el('input',{className:'fi',placeholder:'https://youtu.be/...',value:d[k]||''});
+    linkIn.oninput=e=>d[k]=e.target.value;
+    linkW.appendChild(linkIn);vWrap.appendChild(linkW);
+    const titleW=el('div');titleW.innerHTML='<div class="fl">Title</div>';
+    const titleIn=el('input',{className:'fi',placeholder:'IDLES — DANCER (Official Video)',value:(d.vidDesc&&d.vidDesc[k+'_title'])||''});
+    titleIn.oninput=e=>{if(!d.vidDesc)d.vidDesc={};d.vidDesc[k+'_title']=e.target.value};
+    titleW.appendChild(titleIn);vWrap.appendChild(titleW);
+    const descW=el('div');descW.innerHTML='<div class="fl">Description</div>';
+    const descIn=el('textarea',{className:'fta',placeholder:'Ключевой клип для промо...',style:'min-height:48px',value:(d.vidDesc&&d.vidDesc[k+'_desc'])||''});
+    descIn.oninput=e=>{if(!d.vidDesc)d.vidDesc={};d.vidDesc[k+'_desc']=e.target.value};
+    descW.appendChild(descIn);vWrap.appendChild(descW);
+    hSec.appendChild(vWrap);
   });
   hSec.appendChild(ff('Press Kit','aPK','https://drive.google.com/...'));
   hSec.appendChild(ff('Rider','aTech','https://drive.google.com/...'));
   c.appendChild(hSec);
+  // Supports
+  const supSec=el('div');
+  const supSecTitle=el('div',{className:'sec-t',textContent:'SUPPORT ARTISTS',style:'margin-bottom:8px;margin-top:4px'});
+  supSec.appendChild(supSecTitle);
+  function rSupports(){
+    while(supSec.children.length>1)supSec.removeChild(supSec.lastChild);
+    d.supports.forEach((sp,idx)=>{
+      if(!sp.vidDesc)sp.vidDesc={};
+      const acc=el('div',{className:'acc'});
+      const ah=el('div',{className:'acc-h'});
+      const nm=el('div',{className:'acc-nm',textContent:sp.name||'Support '+(idx+1)});
+      const tog=el('span',{className:'tog',textContent:'\u25be'});
+      ah.appendChild(nm);ah.appendChild(tog);
+      const ab2=el('div',{className:'acc-b'});
+      const nIn=el('input',{className:'fi',placeholder:'Artist name',value:sp.name||''});
+      nIn.oninput=e=>{sp.name=e.target.value;nm.textContent=e.target.value||'Support '+(idx+1)};
+      const nWrap=el('div');nWrap.innerHTML='<div class="fl">Name</div>';nWrap.appendChild(nIn);ab2.appendChild(nWrap);
+      [['Instagram','ig'],['Facebook','fb'],['Bandcamp','bc'],['YouTube','yt'],['Site','site']].forEach(([l,k])=>{
+        const inp2=el('input',{className:'fi',placeholder:'https://...',value:sp[k]||''});
+        inp2.oninput=e=>sp[k]=e.target.value;
+        const w=el('div');w.innerHTML='<div class="fl">'+l+'</div>';w.appendChild(inp2);ab2.appendChild(w);
+      });
+      ['vid1','vid2','vid3'].forEach((k,vi)=>{
+        const vWrap=el('div',{style:'margin-bottom:12px;border:1px solid #2a2a2a;border-radius:8px;padding:10px'});
+        vWrap.innerHTML='<div class="fl" style="font-size:11px;font-weight:600;margin-bottom:8px">VIDEO '+(vi+1)+'</div>';
+        const lW=el('div');lW.innerHTML='<div class="fl">Link</div>';
+        const lIn=el('input',{className:'fi',placeholder:'https://youtu.be/...',value:sp[k]||''});
+        lIn.oninput=e=>sp[k]=e.target.value;lW.appendChild(lIn);vWrap.appendChild(lW);
+        const tW=el('div');tW.innerHTML='<div class="fl">Title</div>';
+        const tIn=el('input',{className:'fi',placeholder:'Artist - Song',value:(sp.vidDesc&&sp.vidDesc[k+'_title'])||''});
+        tIn.oninput=e=>{sp.vidDesc[k+'_title']=e.target.value};tW.appendChild(tIn);vWrap.appendChild(tW);
+        const dW=el('div');dW.innerHTML='<div class="fl">Description</div>';
+        const dIn=el('textarea',{className:'fta',placeholder:'Short description...',style:'min-height:40px'});
+        dIn.value=(sp.vidDesc&&sp.vidDesc[k+'_desc'])||'';
+        dIn.oninput=e=>{sp.vidDesc[k+'_desc']=e.target.value};dW.appendChild(dIn);vWrap.appendChild(dW);
+        ab2.appendChild(vWrap);
+      });
+      [['Press Kit','pk'],['Rider','rider']].forEach(([l,k])=>{
+        const inp2=el('input',{className:'fi',placeholder:'https://drive.google.com/...',value:sp[k]||''});
+        inp2.oninput=e=>sp[k]=e.target.value;
+        const w=el('div');w.innerHTML='<div class="fl">'+l+'</div>';w.appendChild(inp2);ab2.appendChild(w);
+      });
+      const db5=el('button',{className:'btn btn-d btn-sm',textContent:'Remove',style:'margin-top:4px'});
+      db5.onclick=()=>{d.supports.splice(idx,1);rSupports()};
+      ab2.appendChild(db5);
+      ah.onclick=()=>{const op=ab2.style.display!=='none';ab2.style.display=op?'none':'block';tog.className='tog'+(op?'':' op')};
+      acc.appendChild(ah);acc.appendChild(ab2);supSec.appendChild(acc);
+    });
+    const addSp=el('button',{className:'addb',textContent:'+ Add Support Artist'});
+    addSp.onclick=()=>{d.supports.push({name:'',ig:'',fb:'',bc:'',yt:'',site:'',pk:'',rider:'',vid1:'',vid2:'',vid3:'',vidDesc:{}});rSupports()};
+    supSec.appendChild(addSp);
+  }
+  rSupports();
+  c.appendChild(supSec);
 }
 else if(i===3){const cities=d.cities||[];if(!cities.length){c.innerHTML='<p class="hint">Выберите города на вкладке «Основное»</p>';return}cities.forEach(city=>{const cd=d.cityData[city];const s=sec(city+(cd?.venue&&cd.venue!=='—'?' — '+cd.venue:''));
   // Address — auto-fill from VENUE_ADDR, editable
